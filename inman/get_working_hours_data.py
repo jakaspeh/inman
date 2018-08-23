@@ -1,29 +1,6 @@
-from apiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
-from inman.config import get_google_credential_file, get_working_hours_spreadsheet_id
+from inman.config import get_working_hours_spreadsheet_id
 from inman.months import month_to_string
-
-SCOPES = 'https://www.googleapis.com/auth/spreadsheets.readonly'
-
-
-def get_raw_data_from_google_sheets(month):
-    # Setup the Sheets API
-    store = file.Storage('token.json')
-    creds = store.get()
-    if not creds or creds.invalid:
-        path = get_google_credential_file()
-        flow = client.flow_from_clientsecrets(path, SCOPES)
-        creds = tools.run_flow(flow, store)
-    service = build('sheets', 'v4', http=creds.authorize(Http()))
-
-    # Call the Sheets API
-    range_name = month_to_string(month) + '!A3:D40'
-    spreadsheet_id = get_working_hours_spreadsheet_id()
-    result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id,
-                                                 range=range_name).execute()
-
-    return result.get('values', [])
+from inman.google_sheet import get_raw_data_from_google_sheets
 
 
 def check_date(raw_day):
@@ -98,7 +75,11 @@ def parse_day(raw_day):
 
 def get_working_hours(month):
 
-    values = get_raw_data_from_google_sheets(month)
+    spreadsheet_id = get_working_hours_spreadsheet_id()
+    tab = month_to_string(month)
+    value_range = '!A3:D40'
+
+    values = get_raw_data_from_google_sheets(spreadsheet_id, tab, value_range)
 
     working_hours = []
 
