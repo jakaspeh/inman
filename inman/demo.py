@@ -5,9 +5,9 @@ from reportlab.lib.styles import getSampleStyleSheet
 import datetime
 import calendar
 
-from inman.getData import get_working_hours
+from inman.get_working_hours_data import get_working_hours
 from inman.months import Month, month_to_long_name
-from inman.config import get_invoice_spreadsheet_id
+from inman.get_invoice_data import get_invoice_data
 
 styleSheet = getSampleStyleSheet()
 
@@ -125,9 +125,10 @@ def create_working_hours_sheet(month, pdf_path):
 
 
 def main():
-    path = r"C:\Users\Jaka\workspace\generatePDF\demo.pdf"
-    create_working_hours_sheet(Month.Jul, path)
-    print('Created a new file {}'.format(path))
+    #path = r"C:\Users\Jaka\workspace\generatePDF\demo.pdf"
+    #create_working_hours_sheet(Month.Jun, path)
+    #print('Created a new file {}'.format(path))
+    print(get_invoice_data(Month.Jan))
 
 
 if __name__ == "__main__":
