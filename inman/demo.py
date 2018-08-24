@@ -1,11 +1,13 @@
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
-from reportlab.platypus import Table, SimpleDocTemplate, Paragraph
+from reportlab.platypus import Table, SimpleDocTemplate, Paragraph, BaseDocTemplate, Frame, PageTemplate, FrameBreak
+from reportlab.platypus.doctemplate import NextFrameFlowable
 from reportlab.lib.styles import getSampleStyleSheet
 import datetime
 import calendar
 
 from inman.get_working_hours_data import get_working_hours
+from inman.invoice_pdf import create_invoice_pdf
 from inman.months import Month, month_to_long_name
 from inman.get_invoice_data import get_invoice_data
 
@@ -129,6 +131,53 @@ def main():
     #create_working_hours_sheet(Month.Jun, path)
     #print('Created a new file {}'.format(path))
     print(get_invoice_data(Month.Jan))
+
+    pdf_path = r"C:\Users\Jaka\workspace\generatePDF\demo.pdf"
+    create_invoice_pdf(Month.Jan, pdf_path)
+
+    '''
+    #doc = SimpleDocTemplate(pdf_path, page=A4, title='Working hours')
+    doc = BaseDocTemplate(pdf_path, pagesize=A4, showBoundary=False)
+
+    print('left margin:', doc.leftMargin)
+    print('bottom margin:', doc.bottomMargin)
+    print('width:', doc.width)
+    print('height:', doc.height)
+    print('A4:', A4)
+
+    x1 = doc.leftMargin
+    y1 = doc.rightMargin
+    w = doc.width
+    h = doc.height
+
+    print(x1, y1)
+    frameT = Frame(x1, y1 + h * 8 / 10, w, h * 2 / 10, id='normal')
+    frame1 = Frame(doc.leftMargin, doc.bottomMargin, doc.width / 2 - 6, doc.height * 7 / 10, id='col1')
+    frame2 = Frame(doc.leftMargin + doc.width / 2 + 6, doc.bottomMargin, doc.width / 2 - 6,
+                   doc.height * 7 / 10, id='col2')
+
+
+    text = 'Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka JakaJaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka Jaka'
+
+    elements = []
+    elements.append(Paragraph("Jaka Frame one column, " * 5, styleSheet['Normal']))
+    elements.append(FrameBreak())
+    #elements.append(NextPageTemplate('TwoCol'))
+    #elements.append(PageBreak())
+    elements.append(Paragraph("Frame two columns,  " * 5, styleSheet['Normal']))
+    elements.append(FrameBreak())
+    #elements.append(NextPageTemplate('OneCol'))
+    #elements.append(PageBreak())
+    elements.append(Paragraph("Une colonne", styleSheet['Normal']))
+    #doc.addPageTemplates([PageTemplate(id='OneCol',frames=frameT),
+    #                  PageTemplate(id='TwoCol',frames=[frame1,frame2])])
+    page_templates = [PageTemplate(id='jaka', frames=[frameT, frame1, frame2])]
+    doc.addPageTemplates(page_templates)
+    doc.build(elements)
+    '''
+
+
+
 
 
 if __name__ == "__main__":
