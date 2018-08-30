@@ -130,7 +130,7 @@ def main():
     #path = r"C:\Users\Jaka\workspace\generatePDF\demo.pdf"
     #create_working_hours_sheet(Month.Jun, path)
     #print('Created a new file {}'.format(path))
-    print(get_invoice_data(Month.Jan))
+    # print(get_invoice_data(Month.Jan))
 
     pdf_path = r"C:\Users\Jaka\workspace\generatePDF\demo.pdf"
     create_invoice_pdf(Month.Jan, pdf_path)
