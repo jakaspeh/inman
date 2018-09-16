@@ -10,7 +10,8 @@ styleSheet = getSampleStyleSheet()
 
 
 def create_invoice_pdf(month, pdf_path):
-    doc = BaseDocTemplate(pdf_path, pagesize=A4, showBoundary=True)
+    show_boundary = False
+    doc = BaseDocTemplate(pdf_path, pagesize=A4, showBoundary=show_boundary)
 
     invoice_template = get_invoice_template(doc)
     doc.addPageTemplates([invoice_template])
@@ -23,7 +24,7 @@ def get_invoice_text(month):
     invoice_style = ParagraphStyle(name='InbvoiceStype', parent=styleSheet['Normal'], fontSize=10)
     invoice_data = get_invoice_data(month)
     return [
-        get_address_paragraph(invoice_data, invoice_style),
+        get_address_paragraph(invoice_data),
         FrameBreak(),
         get_invoice_title(),
         get_invoice_table(invoice_data, invoice_style),
@@ -38,13 +39,16 @@ def get_invoice_text(month):
         get_legal_paragraph(invoice_style)]
 
 
-def get_address_paragraph(invoice_data, style):
+def get_address_paragraph(invoice_data):
+    s = ParagraphStyle('address', fontSize=12, leading=16)
+
     me = invoice_data.me
     text = '{}<br />'.format(me.name)
     text += '{}, {}, {}<br />'.format(me.address, me.post, me.country)
     text += 'VAT Nr.: {}<br />'.format(me.vat_number)
-    text += '{}<br />'.format(me.email)
+    text += '<a href="mailto:{0}"><font color="blue">{0}</font></a><br />'.format(me.email)
     text += 'Tel.: {}<br /><br /><br />'.format(me.telephone)
+    text += '<br /><br /><br />'
 
     customer = invoice_data.get_customer()
     text += '{}<br />'.format(customer.name)
@@ -52,12 +56,12 @@ def get_address_paragraph(invoice_data, style):
     text += '{}<br />'.format(customer.post)
     text += '{}<br />'.format(customer.country)
     text += 'VAT Nr.: {}<br />'.format(customer.vat_number)
-    return Paragraph(text, style)
+    return Paragraph(text, s)
 
 
 def get_invoice_title():
     invoice_title_style = styleSheet['title']
-    return Paragraph('INVOICE', style=invoice_title_style)
+    return Paragraph('<br /><br /><br />INVOICE<br />', style=invoice_title_style)
 
 
 def get_invoice_table(invoice_data, style):
@@ -72,8 +76,8 @@ def get_invoice_table(invoice_data, style):
         ['Payment Due:', invoice_data.payment_due],
         ['Payment Reference:', invoice_data.payment_reference]
     ]
-
-    return Table(table_data)
+    table_style = [('FONTSIZE', (0, 0), (-1, -1), 12)]
+    return Table(table_data, style=table_style, rowHeights=16)
 
 
 def get_service_table(invoice_data):
@@ -152,23 +156,35 @@ def get_invoice_template(doc):
     h = doc.height
     space = 6
 
+    w_address = 13
+    w_service = 10
+    w_payment = 8
+    w_legal = 2
+    total = w_address + w_service + w_payment + w_legal
+
+    h_address = w_address / total
+    h_service = w_service / total
+    h_payment = w_payment / total
+    h_legal = w_legal / total
+
     half_width = w / 2 - space
 
-    sep1_y = y1 + h * 2 / 3
+    sep1_y = y1 + h * (1 - h_address)
     sep1_x = x1 + w / 2 + space
-    height1 = h * 1 / 3 - space
+    height1 = h * h_address - space
     address = Frame(x1, sep1_y, half_width, height1, id='address')
     invoice_data = Frame(sep1_x, sep1_y, half_width, height1, id='invoice_data')
 
-    sep2_y = y1 + h * 1 / 3
-    service = Frame(x1, sep2_y, w, height1, id='service')
+    sep2_y = y1 + h * (1 - h_address - h_service)
+    height2 = h * h_service - space
+    service = Frame(x1, sep2_y, w, height2, id='service')
 
-    sep3_y = y1 + h * 1 / 20
-    height3 = h * 1 / 3 - h * 1 / 20 - space
+    sep3_y = y1 + h * (1 - h_address - h_service - h_payment)
+    height3 = h * h_payment - space
     payment = Frame(x1, sep3_y, half_width, height3, id='payment')
     amount = Frame(sep1_x, sep3_y, half_width, height3, id='amount')
 
-    height4 = h * 1 / 20 - space
+    height4 = h * h_legal - space
     legal = Frame(x1, y1, w, height4, id='legal')
 
     frames = [address, invoice_data, service, payment, amount, legal]
